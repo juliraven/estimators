@@ -1,3 +1,26 @@
+# Ustawienie prywatnego katalogu na pakiety R w środowisku Streamlit Cloud
+user_lib <- Sys.getenv("R_LIBS_USER")
+if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE)
+.libPaths(c(user_lib, .libPaths()))
+
+# Lista wymaganych pakietów
+needed_packages <- c("bmrm", "dplyr", "future", "future.apply")
+missing_packages <- needed_packages[!(needed_packages %in% installed.packages()[,"Package"])]
+
+# Automatyczna instalacja bez pytania o interaktywne potwierdzenie
+if(length(missing_packages) > 0) {
+  install.packages(missing_packages, 
+                   lib = user_lib, 
+                   repos = "https://cloud.r-project.org", 
+                   dependencies = TRUE)
+}
+
+library(bmrm)
+library(dplyr)
+library(future)
+library(future.apply)
+
+# Wczytanie argumentów wiersza poleceń
 args <- commandArgs(trailingOnly = TRUE)
 
 n           <- as.integer(args[1])
@@ -8,16 +31,6 @@ reps        <- as.integer(args[5])
 model_type  <- args[6]
 beta_type   <- args[7]
 output_file <- args[8]
-
-# Automatyczna instalacja brakujących pakietów R na serwerze
-needed_packages <- c("bmrm", "dplyr", "future", "future.apply")
-new_packages <- needed_packages[!(needed_packages %in% installed.packages()[,"Package"])]
-if(length(new_packages) > 0) install.packages(new_packages, repos = "https://cloud.r-project.org")
-
-library(bmrm)
-library(dplyr)
-library(future)
-library(future.apply)
 
 plan(multisession)
 
