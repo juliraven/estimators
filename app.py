@@ -46,7 +46,8 @@ if run_button:
     
     with st.spinner("Uruchamianie silnika R i wykonywanie symulacji Monte Carlo..."):
         try:
-            subprocess.run(cmd, check=True)
+            # Przechwytywanie komunikatów wyjścia oraz błędów
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
             
             results = pyreadr.read_r(output_file)
             df_pred = results["boxplot_prediction"]
@@ -91,7 +92,8 @@ if run_button:
             summary_table = pd.merge(sum_pred, sum_est, on='Model')
             st.dataframe(summary_table, use_container_width=True)
 
-        except Exception as e:
-            st.error(f"Błąd podczas wykonywania skryptu R: {e}")
+        except subprocess.CalledProcessError as e:
+            st.error("Wystąpił błąd podczas wykonywania skryptu R:")
+            st.code(e.stderr if e.stderr else e.stdout, language="R")
 else:
     st.info("Ustaw parametry w panelu bocznym i kliknij **Uruchom symulację**.")
